@@ -1,6 +1,4 @@
-Sure! Here's a sample **README.md** file for your Flask Hugging Face emotion analyzer app. It includes instructions on setting up a virtual environment, installing dependencies, and configuring your Hugging Face API token.
 
----
 
 ````markdown
 # Emotion Analyzer Flask App using Hugging Face API
