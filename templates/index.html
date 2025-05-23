@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mood Journal</title>
+  <style>
+    :root {
+      --primary: #6d28d9;
+      --primary-light: #8b5cf6;
+      --secondary: #f3f4f6;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --success: #10b981;
+      --background: #ffffff;
+      --card: #f9fafb;
+      --border: #e5e7eb;
+      --shadow: rgba(0, 0, 0, 0.1);
+      
+      /* Emotion colors */
+      --sadness: #3b82f6;
+      --anger: #ef4444;
+      --joy: #fbbf24;
+      --love: #ec4899;
+      --surprise: #10b981;
+      --fear: #8b5cf6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    #journal-form {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      resize: vertical;
+      min-height: 150px;
+      box-shadow: 0 2px 4px var(--shadow);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      align-self: flex-end;
+      box-shadow: 0 4px 15px rgba(109, 40, 217, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(109, 40, 217, 0.4);
+    }
+
+    #result {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      display: none;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    #result:not(:empty) {
+      display: block;
+    }
+
+    .result-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .result-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .result-subtitle {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .chart-container {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .pie-chart {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      position: relative;
+      background: conic-gradient(
+        var(--sadness) 0deg,
+        var(--sadness) 0deg,
+        var(--anger) 0deg,
+        var(--joy) 0deg,
+        var(--love) 0deg,
+        var(--surprise) 0deg
+      );
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      transition: background-color 0.2s;
+    }
+
+    .legend-item:hover {
+      background-color: var(--secondary);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-label {
+      font-weight: 600;
+      text-transform: capitalize;
+      min-width: 80px;
+    }
+
+    .legend-percentage {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      margin-left: auto;
+    }
+
+    .dominant-emotion {
+      text-align: center;
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--secondary);
+      border-radius: 0.75rem;
+      border-left: 4px solid var(--primary);
+    }
+
+    .dominant-emotion-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .dominant-emotion-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-transform: capitalize;
+      margin-bottom: 0.25rem;
+    }
+
+    .confidence-score {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      button {
+        width: 100%;
+      }
+
+      .chart-container {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .pie-chart {
+        width: 150px;
+        height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 AI Mood Journal</h1>
+  <form id="journal-form">
+    <textarea name="entry" rows="5" cols="50" placeholder="How was your day? Share your thoughts and feelings..."></textarea>
+    <button type="submit">✨ Analyze My Mood</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const emotionColors = {
+      sadness: '#3b82f6',
+      anger: '#ef4444',
+      joy: '#fbbf24',
+      love: '#ec4899',
+      surprise: '#10b981',
+      fear: '#8b5cf6'
+    };
+
+    const emotionEmojis = {
+      sadness: '😢',
+      anger: '😠',
+      joy: '😊',
+      love: '❤️',
+      surprise: '😲',
+      fear: '😰'
+    };
+
+    function createPieChart(emotions) {
+      let cumulativePercentage = 0;
+      const gradientStops = [];
+
+      emotions.forEach(emotion => {
+        const percentage = emotion.score * 100;
+        const color = emotionColors[emotion.label] || '#6b7280';
+        
+        gradientStops.push(`${color} ${cumulativePercentage}%`);
+        cumulativePercentage += percentage;
+        gradientStops.push(`${color} ${cumulativePercentage}%`);
+      });
+
+      return `conic-gradient(${gradientStops.join(', ')})`;
+    }
+
+    function displayResults(data) {
+      const resultDiv = document.getElementById('result');
+      
+      // Sort emotions by score (highest first)
+      const sortedEmotions = data.sort((a, b) => b.score - a.score);
+      const dominantEmotion = sortedEmotions[0];
+
+      const pieChartStyle = createPieChart(sortedEmotions);
+
+      const legendItems = sortedEmotions.map(emotion => {
+        const percentage = (emotion.score * 100).toFixed(1);
+        const color = emotionColors[emotion.label] || '#6b7280';
+        const emoji = emotionEmojis[emotion.label] || '😐';
+        
+        return `
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: ${color};"></div>
+            <span class="legend-label">${emoji} ${emotion.label}</span>
+            <span class="legend-percentage">${percentage}%</span>
+          </div>
+        `;
+      }).join('');
+
+      const dominantColor = emotionColors[dominantEmotion.label] || '#6b7280';
+      const dominantEmoji = emotionEmojis[dominantEmotion.label] || '😐';
+
+      resultDiv.innerHTML = `
+        <div class="result-header">
+          <div class="result-title">Emotion Analysis Results</div>
+          <div class="result-subtitle">AI-powered sentiment analysis of your journal entry</div>
+        </div>
+        
+        <div class="chart-container">
+          <div class="pie-chart" style="background: ${pieChartStyle};"></div>
+          <div class="legend">
+            ${legendItems}
+          </div>
+        </div>
+
+        <div class="dominant-emotion">
+          <div class="dominant-emotion-title">Dominant Emotion Detected</div>
+          <div class="dominant-emotion-value" style="color: ${dominantColor};">
+            ${dominantEmoji} ${dominantEmotion.label}
+          </div>
+          <div class="confidence-score">
+            Confidence: ${(dominantEmotion.score * 100).toFixed(1)}%
+          </div>
+        </div>
+      `;
+    }
+
+    const form = document.getElementById('journal-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      
+      // Show loading state
+      const button = form.querySelector('button');
+      const originalText = button.textContent;
+      button.textContent = '🔄 Analyzing...';
+      button.disabled = true;
+
+      try {
+        const res = await fetch('/analyze', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        if (Array.isArray(data)) {
+          displayResults(data);
+        } else {
+          document.getElementById('result').innerHTML = `
+            <div style="text-align: center; color: #ef4444;">
+              <h3>Error</h3>
+              <p>Unable to analyze the emotion. Please try again.</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        document.getElementById('result').innerHTML = `
+          <div style="text-align: center; color: #ef4444;">
+            <h3>Error</h3>
+            <p>Network error. Please check your connection and try again.</p>
+          </div>
+        `;
+      } finally {
+        button.textContent = originalText;
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
